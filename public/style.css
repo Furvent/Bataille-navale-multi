@@ -1,3 +1,5 @@
-div {
-    background-color: salmon;
+.button{
+    height: 25px;
+    width: 80px;
+    margin: 20px, 10px, 20px, 10px;
 }
