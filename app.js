@@ -5,6 +5,8 @@ let app = express();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 
+const numberMaxPlayers = 2;
+
 app.use(express.static('public'));
 
 const server = 7589;
@@ -21,14 +23,14 @@ let users = new Map();
  */
 
 // In object lobby, players is a list of id of players in lobby room
-let lobby = {isEmpty: true, isFull: false, players: []};
+let lobby = { isEmpty: true, isFull: false, players: [] };
 
 http.listen(server, function () {
     console.log("Server started, listening on *:" + server);
 });
 
 io.on('connection', function (socket) {
-    console.log("USER: " + socket.id + "    CONNECTED TO SERVER.");
+    console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
     users.set(socket.id, {});
     let user = users.get(socket.id); // Use as reference to quick selection
 
@@ -43,24 +45,40 @@ io.on('connection', function (socket) {
      * Lobby is filling.
      * Lobby is full, so party is currently launch and player can't enter in it
      */
-    socket.on('wantJoinLobby', function() {
+    socket.on('wantJoinLobby', function () {
         if (lobby.isEmpty) {
             console.log("Lobby is opening with user: " + socket.id);
             lobby.isEmpty = false;
             lobby.players.push(socket.id); // Add id of socket in lobby.
+            socket.join('lobby'); // It's a room, used to broadcast at the right players.
             socket.emit("enterLobby", returnPlayersPseudosInLobby(lobby.players, users)); // Emit to connected socket
         } else if (lobby.isFull) {
             console.log("User: " + socket.id + " tried to enter in lobby but it was full.");
         } else {
-            console.log("User: " + socket.id + " joins the lobby." + (lobby.players - 4) + " place(s) left.");
+            console.log("User: " + socket.id + " joins the lobby." + Math.abs((lobby.players.length - numberMaxPlayers)) + " place(s) left.");
             lobby.players.push(socket.id); // Add id of socket in lobby.
+            socket.join('lobby');
             socket.emit("enterLobby", returnPlayersPseudosInLobby(lobby.players, users)); // Emit to connected socket
             socket.broadcast.emit("updateLobby", returnPlayersPseudosInLobby(lobby.players, users)); // Update others sockets
+
+            if (lobby.players.length >= numberMaxPlayers) {
+                lobby.isFull = true;
+                io.in('lobby').emit('launchGame');
+                console.log("Lobby is full, launch a party.");
+            }
         }
     });
 
     socket.on('disconnect', function () {
-
+        console.log("USER: " + socket.id + " disconnected from server.")
+        // If disconnected, remove from user and lobby
+        let index = lobby.players.indexOf(socket.id);
+        if (index > -1) {
+            lobby.players.splice(index, 1);
+            console.log("Removed player: " + socket.id + " from lobby.")
+        }
+        users.delete(socket.id) ? console.log("Remove user: " + socket.id + " from users list.")
+                                : console.log("ERROR: tried to remove an inexistant user from users.");
     });
 });
 
@@ -70,7 +88,7 @@ io.on('connection', function (socket) {
  */
 function returnPlayersPseudos(players) {
     let pseudos = [];
-    players.forEach( function (user) {
+    players.forEach(function (user) {
         console.log("Debug in returnPlayersPseudos, user: " + user); // Debug TODO: REMOVE
         pseudos.push(user.pseudo);
     });
@@ -84,7 +102,7 @@ function returnPlayersPseudos(players) {
  */
 function returnPlayersPseudosInLobby(ids, users) {
     let pseudos = [];
-    ids.forEach( function (id) {
+    ids.forEach(function (id) {
         pseudos.push(users.get(id).pseudo);
     });
     return pseudos;

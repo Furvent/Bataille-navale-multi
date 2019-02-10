@@ -34,3 +34,15 @@ function showLobby(container, title, pseudos) {
         container.appendChild(p);
     }
 }
+
+function showCanvasRoom(container, title) {
+    document.body.removeChild(title);
+    let canvas = document.createElement('canvas');
+    canvas.setAttribute('id', 'gameCanvas');
+    canvas.setAttribute('width', '800');
+    canvas.setAttribute('height', '800');
+    while (container.firstChild) { // We clean the main div container
+        container.removeChild(container.firstChild);
+    }
+    container.appendChild(canvas);
+}

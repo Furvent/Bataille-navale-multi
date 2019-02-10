@@ -25,6 +25,10 @@
     socket.on("updateLobby", function(pseudos) {
         showLobby(container, title, pseudos);
     });
+
+    socket.on("launchGame", function() {
+        showCanvasRoom(container, title);
+    });
     //#endregion
 
     function init() {
@@ -54,10 +58,13 @@
                     break;
 
                 default:
-                    pseudo = prompt("Je viens de commander plein de pizzas grâce à ton IP qui vont arriver à ton domicile");
+                    pseudo = prompt("Grâce à ton IP, je viens de commander plein de pizzas qui vont arriver à ton domicile");
                     break;
             }
+            i++;
         }
+        // traiter la sécurité du pseudo : TODO
+        
         return pseudo;
     }
 })();
