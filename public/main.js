@@ -8,7 +8,8 @@
     let buttonYes = null;
     let buttonNo = null;
 
-    init();
+    //init();
+    initDebug();
 
     //#region ButtonEvent
     function enterLobby() {
@@ -37,6 +38,10 @@
         showRestRoom(container, title); // Put player in restRoom where he will choose to join lobby
         buttonYes = document.getElementById('buttonYes'); // Now we can ref the button
         buttonYes.addEventListener('click', enterLobby);
+    }
+
+    function initDebug() {
+        socket.emit('debugEnterCanvas');
     }
 
     function askPseudo() {

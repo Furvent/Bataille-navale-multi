@@ -13,6 +13,7 @@ const server = 7589;
 
 // User is a map with a list of player with id as key
 let users = new Map();
+let user = null;
 
 /**
  * user structure :
@@ -31,12 +32,14 @@ http.listen(server, function () {
 
 io.on('connection', function (socket) {
     console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
-    users.set(socket.id, {});
-    let user = users.get(socket.id); // Use as reference to quick selection
+
+    socket.on('debugEnterCanvas', function () {
+        debugInitGame();
+    });
 
     socket.on('getPseudo', function (pseudo) {
         user.pseudo = pseudo;
-        console.log("User: " + socket.id + " gave pseudo: " + users.get(socket.id).pseudo);
+        console.log("User: " + socket.id + " gave pseudo: " + user.pseudo);
     });
 
     /**
@@ -78,8 +81,17 @@ io.on('connection', function (socket) {
             console.log("Removed player: " + socket.id + " from lobby.")
         }
         users.delete(socket.id) ? console.log("Remove user: " + socket.id + " from users list.")
-                                : console.log("ERROR: tried to remove an inexistant user from users.");
+            : console.log("ERROR: tried to remove an inexistant user from users.");
     });
+
+    function debugInitGame() {
+        users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) });
+        user = users.get(socket.id); // Use as reference to quick selection
+        console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
+        lobby.players.push(socket.id);
+        socket.join('lobby');
+        socket.emit('launchGame');
+    }
 });
 
 /**
