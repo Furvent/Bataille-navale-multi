@@ -29,6 +29,7 @@
 
     socket.on("launchGame", function() {
         showCanvasRoom(container, title);
+        //socket.emit('askGrid');
     });
     //#endregion
 
@@ -40,7 +41,7 @@
         buttonYes.addEventListener('click', enterLobby);
     }
 
-    function initDebug() {
+    function initDebug() { // See server side
         socket.emit('debugEnterCanvas');
     }
 

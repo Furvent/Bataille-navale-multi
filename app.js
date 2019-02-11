@@ -4,6 +4,7 @@ let express = require('express');
 let app = express();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
+let grids = require('./grids');
 
 const numberMaxPlayers = 2;
 
@@ -19,7 +20,7 @@ let user = null;
  * user structure :
  * {
  *   pseudo: pseudo,
- *   
+ *   gridInfo: { anchor: {x: x, y: y}, grid: grid[][]}
  * }
  */
 
@@ -32,8 +33,11 @@ http.listen(server, function () {
 
 io.on('connection', function (socket) {
     console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
+    users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
+    user = users.get(socket.id); // Use as reference to quick selection // TODO : Need verify it's really working...
+    console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
 
-    socket.on('debugEnterCanvas', function () {
+    socket.on('debugEnterCanvas', function () { // Use to debug only, call when client is connected first time.
         debugInitGame();
     });
 
@@ -72,6 +76,16 @@ io.on('connection', function (socket) {
         }
     });
 
+    // Number of cell FOR ONE GRID in width
+    const gridWidth = 10;
+    // Number of cell FOR ONE GRID in height
+    const gridHeight = 10;
+
+    socket.on('askGrid', function () {
+        initClientGrid(gridWidth, gridHeight); // Generate grid for client
+
+    });
+
     socket.on('disconnect', function () {
         console.log("USER: " + socket.id + " disconnected from server.")
         // If disconnected, remove from user and lobby
@@ -85,12 +99,21 @@ io.on('connection', function (socket) {
     });
 
     function debugInitGame() {
-        users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) });
-        user = users.get(socket.id); // Use as reference to quick selection
-        console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
         lobby.players.push(socket.id);
         socket.join('lobby');
         socket.emit('launchGame');
+    }
+
+    let indexPlayer = 1; // Use to know in wich order players are generating grid, to after that place them in the canvas.
+    function initClientGrid(width, height) {
+        if (indexPlayer <= numberMaxPlayers) {
+            // Generate grid
+            user.gridInfo = grids.generateGrid(width, height, playerIndex);
+            indexPlayer++;
+        } else {
+            Console.log("ERROR: TO MUCH CLIENT ASKING FOR A GRID, in func initClientGrid().")
+        }
+
     }
 });
 
