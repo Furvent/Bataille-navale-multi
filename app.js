@@ -5,7 +5,7 @@ let app = express();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let grids = require('./grids');
-
+let boats = require('./boats');
 const numberMaxPlayers = 2;
 
 app.use(express.static('public'));
@@ -14,13 +14,28 @@ const server = 7589;
 
 // User is a map with a list of player with id as key
 let users = new Map();
-let user = null;
+let user = null; // Use as shortcut of users.get(socket.id)
 
 /**
  * user structure :
  * {
  *   pseudo: pseudo,
- *   gridInfo: { anchor: {x: x, y: y}, grid: grid[][]}
+ *   gridInfo: { anchor: {x: int, y: int},
+ *      grid: grid[ [ // Each entry is a cell
+ *          {touched: bool
+ *           boat: reference to an object Boat
+ *           pos : {
+ *              x: int,
+ *              y: int
+ *           }
+ *          } ] ]},
+ *   boats: [ Boat: // Array of objects Boat
+ *      { size: int,
+ *        life: int,
+ *        POS: 
+ *          { x: int,
+ *            y: int }
+ *      } ] 
  * }
  */
 
@@ -76,14 +91,11 @@ io.on('connection', function (socket) {
         }
     });
 
-    // Number of cell FOR ONE GRID in width
-    const gridWidth = 10;
-    // Number of cell FOR ONE GRID in height
-    const gridHeight = 10;
-
     socket.on('askGrid', function () {
-        initClientGrid(gridWidth, gridHeight); // Generate grid for client
-
+        initClientGrid(); // Generate grid
+        // Generate boats in grid
+        initClientBoats()
+        // Send grid with boats to client
     });
 
     socket.on('disconnect', function () {
@@ -104,16 +116,20 @@ io.on('connection', function (socket) {
         socket.emit('launchGame');
     }
 
-    let indexPlayer = 1; // Use to know in wich order players are generating grid, to after that place them in the canvas.
-    function initClientGrid(width, height) {
+    var indexPlayer = 1; // Use to know in wich order players are generating grid, to place them in the canvas at the good position.
+    function initClientGrid() {
         if (indexPlayer <= numberMaxPlayers) {
             // Generate grid
-            user.gridInfo = grids.generateGrid(width, height, playerIndex);
+            user.gridInfo = grids.generateGrid(indexPlayer);
             indexPlayer++;
         } else {
             Console.log("ERROR: TO MUCH CLIENT ASKING FOR A GRID, in func initClientGrid().")
         }
 
+    }
+
+    function initClientBoats() {
+        user.boats = boats.generateBoats()
     }
 });
 

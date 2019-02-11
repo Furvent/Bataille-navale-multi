@@ -29,7 +29,7 @@
 
     socket.on("launchGame", function() {
         showCanvasRoom(container, title);
-        //socket.emit('askGrid');
+        socket.emit('askGrid');
     });
     //#endregion
 
