@@ -18,6 +18,9 @@ const server = 7589;
 let users = new Map();
 /**
  * Use as shortcut of users.get(socket.id)
+ * @pseudo
+ * @gridInfo All info of the grid
+ * @boats All boats of the player
  */
 let user = null;
 
@@ -73,7 +76,7 @@ io.on('connection', function (socket) {
      * Here 3 states :
      * Lobby is empty, must create a new one.
      * Lobby is filling.
-     * Lobby is full, so party is currently launch and player can't enter in it
+     * Lobby is full, so party was launch and new player can't enter in it
      */
     socket.on('wantJoinLobby', function () {
         if (lobby.isEmpty) {
@@ -105,7 +108,8 @@ io.on('connection', function (socket) {
         console.log("*** GENERATE BOATS to player: " + user.pseudo + " ***");
         initClientBoats(); // Generate boats on grid
         console.log("*** END OF GENERATION BOATS to player: " + user.pseudo + " ***");
-        socket.emit('sendGrid', {grid: user.gridInfo, boats: user.boats}) // Send grid and boats to client
+        socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo)); // Send grid and boats to client
+        io.in('party').emit('sendInitGridOtherPlayers', { pseudo: user.pseudo, anchor: user.gridInfo.anchor } ); // Send info from this socket to other players.
     });
 
     socket.on('disconnect', function () {
@@ -169,3 +173,32 @@ function returnPlayersPseudosInLobby(ids, users) {
     });
     return pseudos;
 }
+
+/**
+ * Thie function purge the propertie gridInfo from user to just send the data 
+ * necessary to render correctly the client. Client don't have to get access
+ * to pointers to his boat, he just needs to know where they are.
+ * 
+ * Return the purged grid
+ * @param {*} gridInfo user.gridInfo (in real: users.get(socket.id).gridInfo)
+ */
+function returnGridClientOwner(gridInfo) {
+    let gridToSend = Object.assign({}, gridInfo);
+
+    for (let x = 0; x < gridToSend.grid.length; x++) {
+
+        for (let y = 0; y < gridToSend.grid[x].length; y++) {
+            if (gridToSend.grid[x][y].boat !== null) { // If there is a pointer to a boat, change it to a boolean with value true
+                gridToSend.grid[x][y].boat = true;
+            } else { // Or if there is no boat, change the null value to a boolean with false
+                gridToSend.grid[x][y].boat = false;
+            }
+        }
+    }
+    return gridToSend;
+}
+
+// TODO : créer un objet "party" qui stockera des infos sur la partie :
+// - les joueurs avec leur socket.id et un boolean pour savoir si ils ont joué sur ce tour
+// - un compteur de tour
+// TODO continuer à connecter le renderer avec le serveur 

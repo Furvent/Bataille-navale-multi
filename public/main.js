@@ -30,10 +30,31 @@
     let para = null;
 
     /**
+     * This is an two dimension array received from server with informations to render the grid.
      * 
+     * See Server code to understanding
      */
-    let playerGrid = null;
-    let otherPlayersGrid = [];
+    let playerGridInfo = null;
+
+    /**
+     * Array to stock informations about THE OTHER PLAYERS grids to render those
+     * 
+     * Each other player info is in this format :
+     * @pseudo other player pseudo
+     * @anchor user's grid origin = { x: int, y: int }
+     * @grid Two dimensional array with info updated by server
+     */
+    let otherPlayersGridInfos = [];
+
+    /**
+     * @type string
+     */
+    let pseudo = "";
+
+    /**
+     * Map with other players pseudo as key
+     */
+
 
     //init();
     initDebug();
@@ -62,15 +83,18 @@
         socket.emit('askGrid');
     });
 
-    socket.on('sendGrid', function (data) {
-        // Must render is own grid, and wait to render other grid.
-        // STOPED HERE
-        //initRendering();
-    })
+    socket.on('sendInitGrid', function (data) {
+        playerGridInfo = data;
+        initRendering();
+    });
+
+    socket.on('sendInitGridOtherPlayers', function(data) {
+
+    });
     //#endregion
 
     function init() {
-        let pseudo = askPseudo(); // Get pseudo
+        pseudo = askPseudo(); // Get pseudo
         socket.emit('getPseudo', pseudo); // Send it to server
         showRestRoom(container, title); // Put player in restRoom where he will choose to join lobby
         buttonYes = document.getElementById('buttonYes'); // Now we can ref the button
@@ -106,7 +130,6 @@
             i++;
         }
         // traiter la sécurité du pseudo : TODO
-
         return pseudo;
     }
 
@@ -120,7 +143,7 @@
             });
 
             renderLoop = setInterval(function () {
-                drawEverything(canvasContext,playerGrid, otherPlayersGrid);
+                drawEverything(canvasContext, playerGridInfo, pseudo, otherPlayersGridInfos);
             })
         }
     }
