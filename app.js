@@ -93,7 +93,7 @@ io.on('connection', function (socket) {
 
             if (lobby.players.length >= numberMaxPlayers) {
                 lobby.isFull = true;
-                io.in('lobby').emit('launchGame');
+                io.in('lobby').emit('initGame');
                 console.log("Lobby is full, launch a party.");
             }
         }
@@ -124,7 +124,7 @@ io.on('connection', function (socket) {
         lobby.players.push(socket.id);
         socket.join('lobby');
         socket.join('party'); // Use to emit to the good players
-        socket.emit('launchGame'); 
+        socket.emit('initGame');
     }
 
     var indexPlayer = 1; // Use to know in wich order players are generating grid, to place them in the canvas at the good position.
@@ -132,6 +132,7 @@ io.on('connection', function (socket) {
         if (indexPlayer <= numberMaxPlayers) {
             // Generate grid
             user.gridInfo = grids.generateGrid(indexPlayer);
+            user.playerNumber = indexPlayer;
             indexPlayer++;
         } else {
             Console.log("ERROR: TO MUCH CLIENT ASKING FOR A GRID, in func initClientGrid().")

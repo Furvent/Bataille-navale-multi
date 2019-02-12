@@ -1,12 +1,5 @@
 "use strict";
 
-// Reset the html element
-// function resetHtmlElemts(list) {
-//     list.forEach(elem => {
-//         elem.innerHtml = "ERROR: EMPTY HTML.";
-//     });
-// }
-
 // Show page where we asking player if he wants to join lobby
 function showRestRoom(container, title) {
     title.innerText = "DO YOU WANT TO JOIN THE LOBBY ?"
@@ -50,5 +43,7 @@ function showCanvasRoom(container, title) {
 
     // Generate text at the bottom of canvas
     let para = document.createElement('p');
-    p.setAttribute('id', 'output-text');
+    para.setAttribute('id', 'output-text');
+    para.innerText = "Waiting players";
+    container.appendChild(para);
 }
