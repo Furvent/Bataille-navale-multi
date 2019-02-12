@@ -12,9 +12,14 @@ app.use(express.static('public'));
 
 const server = 7589;
 
-// User is a map with a list of player with id as key
+/**
+ * A map with id as key, and an user as value
+ */
 let users = new Map();
-let user = null; // Use as shortcut of users.get(socket.id)
+/**
+ * Use as shortcut of users.get(socket.id)
+ */
+let user = null;
 
 /**
  * user structure :
@@ -92,9 +97,10 @@ io.on('connection', function (socket) {
     });
 
     socket.on('askGrid', function () {
+        console.log("*** GENERATING GRID to player: " + user.pseudo + " ***");
         initClientGrid(); // Generate grid
-        // Generate boats in grid
-        initClientBoats()
+        console.log("*** GENERATE BOATS to player: " + user.pseudo + " ***");
+        initClientBoats(); // Generate boats on grid
         // Send grid with boats to client
     });
 
@@ -129,7 +135,7 @@ io.on('connection', function (socket) {
     }
 
     function initClientBoats() {
-        user.boats = boats.generateBoats()
+        user.boats = boats.generateBoats(user.gridInfo.grid);
     }
 });
 
@@ -140,7 +146,6 @@ io.on('connection', function (socket) {
 function returnPlayersPseudos(players) {
     let pseudos = [];
     players.forEach(function (user) {
-        console.log("Debug in returnPlayersPseudos, user: " + user); // Debug TODO: REMOVE
         pseudos.push(user.pseudo);
     });
     return pseudos;

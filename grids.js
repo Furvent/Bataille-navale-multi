@@ -24,12 +24,18 @@ module.exports = {
      * @param {Integer} playerIndex : to determinate at wich position the player will be
      */
     generateGrid: function (playerIndex) {
+        /**
+         * Is composed of the anchor and the grid itself
+         */
         let gridInfo = {};
+        /**
+         * The grid itself with infos on all cells
+         */
         gridInfo.grid = [];
-        let xAndYDistant = this.SPACE_BETWEEN_GRIDS_AND_CANVAS + this.SPACE_BETWEEN_GRIDS + (this.CELL_SIDE * width);
+        let xAndYDistant = this.SPACE_BETWEEN_GRIDS_AND_CANVAS + this.SPACE_BETWEEN_GRIDS + (this.CELL_SIDE * this.GRID_WIDTH);
         switch (playerIndex) {
             case 1: // Top left
-                console.log("Giva anchor to player " + playerIndex);
+                console.log("Give anchor to player " + playerIndex);
                 gridInfo.anchor = {
                     x: this.SPACE_BETWEEN_GRIDS_AND_CANVAS,
                     y: this.SPACE_BETWEEN_GRIDS_AND_CANVAS
@@ -61,7 +67,6 @@ module.exports = {
                 }
                 break;
         }
-        let grid = gridInfo.grid; // Shortcut
         for (let x = 0; x < this.GRID_WIDTH; x++) {
             gridInfo.grid.push([]);
             for (let y = 0; y < this.GRID_HEIGHT; y++) {
