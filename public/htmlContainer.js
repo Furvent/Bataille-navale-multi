@@ -37,12 +37,18 @@ function showLobby(container, title, pseudos) {
 
 function showCanvasRoom(container, title) {
     document.body.removeChild(title);
+
+    // Generate canvas
     let canvas = document.createElement('canvas');
-    canvas.setAttribute('id', 'gameCanvas');
+    canvas.setAttribute('id', 'game-canvas');
     canvas.setAttribute('width', '800');
     canvas.setAttribute('height', '800');
     while (container.firstChild) { // We clean the main div container
         container.removeChild(container.firstChild);
     }
     container.appendChild(canvas);
+
+    // Generate text at the bottom of canvas
+    let para = document.createElement('p');
+    p.setAttribute('id', 'output-text');
 }

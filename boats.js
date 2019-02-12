@@ -85,7 +85,6 @@ function placeBoat(size, grid) {
 
     // While the boat is not placed
     while (newBoat === null) {
-
         // We choose randomly two indexes
         let xIndex = getRandomInt(grid.length);
         let yIndex = getRandomInt(grid[0].length);

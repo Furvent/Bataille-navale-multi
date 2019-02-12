@@ -24,8 +24,11 @@ let user = null;
 /**
  * user structure :
  * {
- *   pseudo: pseudo,
- *   gridInfo: { anchor: {x: int, y: int},
+ *   pseudo: string,
+ *   playerNumber: int,
+ *   gridInfo: {
+ *      anchor:
+ *          {x: int, y: int},
  *      grid: grid[ [ // Each entry is a cell
  *          {touched: bool
  *           boat: reference to an object Boat
@@ -33,7 +36,7 @@ let user = null;
  *              x: int,
  *              y: int
  *           }
- *          } ] ]},
+ *          }]]},
  *   boats: [ Boat: // Array of objects Boat
  *      { size: int,
  *        life: int,
@@ -101,7 +104,8 @@ io.on('connection', function (socket) {
         initClientGrid(); // Generate grid
         console.log("*** GENERATE BOATS to player: " + user.pseudo + " ***");
         initClientBoats(); // Generate boats on grid
-        // Send grid with boats to client
+        console.log("*** END OF GENERATION BOATS to player: " + user.pseudo + " ***");
+        socket.emit('sendGrid', {grid: user.gridInfo, boats: user.boats}) // Send grid and boats to client
     });
 
     socket.on('disconnect', function () {
@@ -119,7 +123,8 @@ io.on('connection', function (socket) {
     function debugInitGame() {
         lobby.players.push(socket.id);
         socket.join('lobby');
-        socket.emit('launchGame');
+        socket.join('party'); // Use to emit to the good players
+        socket.emit('launchGame'); 
     }
 
     var indexPlayer = 1; // Use to know in wich order players are generating grid, to place them in the canvas at the good position.
