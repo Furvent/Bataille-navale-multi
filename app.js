@@ -50,6 +50,13 @@ let user = null;
  * }
  */
 
+/**
+ * Use to know in wich order players are generating grid,
+ * to place them in the canvas at the good position
+ * (determinate anchor of the grid).
+ */
+var indexPlayer = 1;
+
 // In object lobby, players is a list of id of players in lobby room
 let lobby = { isEmpty: true, isFull: false, players: [] };
 
@@ -109,7 +116,7 @@ io.on('connection', function (socket) {
         initClientBoats(); // Generate boats on grid
         console.log("*** END OF GENERATION BOATS to player: " + user.pseudo + " ***");
         socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo)); // Send grid and boats to client
-        io.in('party').emit('sendInitGridOtherPlayers', { pseudo: user.pseudo, anchor: user.gridInfo.anchor } ); // Send info from this socket to other players.
+        io.in('party').emit('sendInitGridOtherPlayers', { pseudo: user.pseudo, anchor: user.gridInfo.anchor }); // Send info from this socket to other players.
     });
 
     socket.on('disconnect', function () {
@@ -131,11 +138,11 @@ io.on('connection', function (socket) {
         socket.emit('initGame');
     }
 
-    var indexPlayer = 1; // Use to know in wich order players are generating grid, to place them in the canvas at the good position.
     function initClientGrid() {
         if (indexPlayer <= numberMaxPlayers) {
             // Generate grid
             user.gridInfo = grids.generateGrid(indexPlayer);
+            console.log("USER " + socket.id + " with pseudo " + user.pseudo + " have indexPlayer of " + indexPlayer);
             user.playerNumber = indexPlayer;
             indexPlayer++;
         } else {
@@ -198,7 +205,9 @@ function returnGridClientOwner(gridInfo) {
     return gridToSend;
 }
 
+// TODO continuer à connecter le renderer avec le serveur 
+// TODO BUG : Faire envoyer par le serveur la position de chaque cellule des autres joueurs
+// pour pouvoir les afficher, mais évidemment sans envoyer les données sur les navires.
 // TODO : créer un objet "party" qui stockera des infos sur la partie :
 // - les joueurs avec leur socket.id et un boolean pour savoir si ils ont joué sur ce tour
 // - un compteur de tour
-// TODO continuer à connecter le renderer avec le serveur 

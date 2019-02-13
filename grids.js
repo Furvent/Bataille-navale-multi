@@ -32,6 +32,8 @@ module.exports = {
          * The grid itself with infos on all cells
          */
         gridInfo.grid = [];
+        
+        // Si je veux des grilles rectangulaires, c'est ici que je devrais revoir la distance des ancres.
         let xAndYDistant = this.SPACE_BETWEEN_GRIDS_AND_CANVAS + this.SPACE_BETWEEN_GRIDS + (this.CELL_SIDE * this.GRID_WIDTH);
         switch (playerIndex) {
             case 1: // Top left

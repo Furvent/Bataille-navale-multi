@@ -5,6 +5,8 @@
     let title = document.getElementById('title');
     let container = document.getElementById('container');
 
+    let renderLoop;
+
     // Buttons use to enter lobby or leave application
     let buttonYes = null;
     let buttonNo = null;
@@ -30,7 +32,9 @@
     let para = null;
 
     /**
-     * This is an two dimension array received from server with informations to render the grid.
+     * This is an object received from server with informations to render the grid.
+     * @anchor to know where rendrer the grid
+     * @grid to render properly the grid's player client owner (not other player's grid)
      * 
      * See Server code to understanding
      */
@@ -40,8 +44,8 @@
      * Array to stock informations about THE OTHER PLAYERS grids to render those
      * 
      * Each other player info is in this format :
-     * @pseudo other player pseudo
-     * @anchor user's grid origin = { x: int, y: int }
+     * @pseudo other player pseudo use to render it next to the grid
+     * @anchor user's grid origin = { x: int, y: int }. USe as id
      * @grid Two dimensional array with info updated by server
      */
     let otherPlayersGridInfos = [];
@@ -51,10 +55,8 @@
      */
     let pseudo = "";
 
-    /**
-     * Map with other players pseudo as key
-     */
-
+    const GRID_WIDTH = 10;
+    const GRID_HEIGHT = 10;
 
     //init();
     initDebug();
@@ -79,7 +81,6 @@
         showCanvasRoom(container, title);
         canvas = document.getElementById('game-canvas');
         para = document.getElementById('output-text');
-        init
         socket.emit('askGrid');
     });
 
@@ -88,7 +89,11 @@
         initRendering();
     });
 
-    socket.on('sendInitGridOtherPlayers', function(data) {
+    socket.on('sendInitGridOtherPlayers', function (data) {
+        // At this point, we know that a new player join the game.
+        // We must create a grid client side. In it, we will stock the
+        // info send by server.
+        otherPlayersGridInfos.push(initGridOtherPlayer(data));
 
     });
     //#endregion
@@ -134,17 +139,44 @@
     }
 
     function initRendering() {
-        windows.onload = function () {
-            canvasContext = canvas.getContext('2d');
+        console.log("Init launch");
+        console.log("I'm in onload");
+        canvasContext = canvas.getContext('2d');
 
-            // TODO: ADD EVENT LISTENER ONCLICK ON CANVAS
-            canvas.addEventListener('mousedown', function (evt) {
-                let mousePos = getCursorPosition(evt); // See solo project to copy
-            });
+        // TODO: ADD EVENT LISTENER ONCLICK ON CANVAS
+        // canvas.addEventListener('mousedown', function (evt) {
+        //     let mousePos = getCursorPosition(evt); // See solo project to copy
+        // });
 
-            renderLoop = setInterval(function () {
-                drawEverything(canvasContext, playerGridInfo, pseudo, otherPlayersGridInfos);
-            })
+        renderLoop = setInterval(function () {
+            console.log("Render activate");
+            drawEverything(canvas.width, canvas.height, canvasContext, playerGridInfo, pseudo, otherPlayersGridInfos);
+        }, 1000 / FRAMES_PER_SECOND);
+    }
+
+    /**
+     * Create a new object with one other player infos : his grid, an anchor and his pseudo.
+     * 
+     * Return the object create.
+     * @param {Object} data Data send by the server, with the anchor and the pseudo
+     */
+    function initGridOtherPlayer(data) {
+        let gridInfo = {};
+        gridInfo.anchor = data.anchor;
+        // DEBUG
+        gridInfo.pseudo = data.pseudo;
+        gridInfo.grid = [];
+        console.log("player with pseudo " + gridInfo.pseudo +" anchor is: x=" + gridInfo.anchor.x + " y=" + gridInfo.anchor.y);
+        for (let x = 0; x < GRID_WIDTH; x++) {
+            gridInfo.grid.push([]);
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                gridInfo.grid[x].push();
+                gridInfo.grid[x][y] = {
+                    touched: false, // Does the cell was touched by any player ? To show it.
+                    boat: false, // If there is a boat, to render it when touched
+                }
+            }
         }
+        return gridInfo;
     }
 })();
