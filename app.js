@@ -6,7 +6,7 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let grids = require('./grids');
 let boats = require('./boats');
-const numberMaxPlayers = 2;
+const numberMaxPlayers = 4;
 
 app.use(express.static('public'));
 
@@ -146,7 +146,7 @@ io.on('connection', function (socket) {
             user.playerNumber = indexPlayer;
             indexPlayer++;
         } else {
-            Console.log("ERROR: TO MUCH CLIENT ASKING FOR A GRID, in func initClientGrid().")
+            console.log("ERROR: TO MUCH CLIENT ASKING FOR A GRID, in func initClientGrid().")
         }
 
     }
