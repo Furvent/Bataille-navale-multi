@@ -46,6 +46,7 @@ function drawBackground(ctx, cWidth, cHeight) {
  * @param {*} pseudo The pseudo to show next the grid
  */
 function drawClientGrid(ctx, pInfo, pseudo) {
+    console.log("drawing client grid");
     let grid = pInfo.grid; // Shortcut
     let anchor = pInfo.anchor; // Shortcut
 
@@ -100,6 +101,7 @@ function drawOtherPlayersGrid(canvasContext, otherPlayersGrid) {
 
 
 function drawOneGridOfOtherPlayer(ctx, pInfoOtherPlayer) {
+    console.log("drawing other client grid");
     let grid = pInfoOtherPlayer.grid; // Shortcut
     let anchor = pInfoOtherPlayer.anchor; // Shortcut
     let pseudo = pInfoOtherPlayer.pseudo // Shortcut

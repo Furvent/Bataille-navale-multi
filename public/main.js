@@ -93,7 +93,7 @@
         // At this point, we know that a new player join the game.
         // We must create a grid client side. In it, we will stock the
         // info send by server.
-        otherPlayersGridInfos.push(initGridOtherPlayer(data));
+        otherPlayersGridInfos.push({pseudo: data.pseudo, anchor: data.gridInfo.anchor, grid: data.gridInfo.grid});
 
     });
     //#endregion
@@ -155,6 +155,8 @@
     }
 
     /**
+     * @deprecated Since server send position and generate grid from other players passed at initialisation
+     * 
      * Create a new object with one other player infos : his grid, an anchor and his pseudo.
      * 
      * Return the object create.
@@ -162,11 +164,11 @@
      */
     function initGridOtherPlayer(data) {
         let gridInfo = {};
-        gridInfo.anchor = data.anchor;
+        gridInfo.anchor = data.grid.anchor;
         // DEBUG
         gridInfo.pseudo = data.pseudo;
         gridInfo.grid = [];
-        console.log("player with pseudo " + gridInfo.pseudo +" anchor is: x=" + gridInfo.anchor.x + " y=" + gridInfo.anchor.y);
+        console.log("player with pseudo " + gridInfo.pseudo + " anchor is: x=" + gridInfo.anchor.x + " y=" + gridInfo.anchor.y);
         for (let x = 0; x < GRID_WIDTH; x++) {
             gridInfo.grid.push([]);
             for (let y = 0; y < GRID_HEIGHT; y++) {

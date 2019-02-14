@@ -115,8 +115,9 @@ io.on('connection', function (socket) {
         console.log("*** GENERATE BOATS to player: " + user.pseudo + " ***");
         initClientBoats(); // Generate boats on grid
         console.log("*** END OF GENERATION BOATS to player: " + user.pseudo + " ***");
-        socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo)); // Send grid and boats to client
-        io.in('party').emit('sendInitGridOtherPlayers', { pseudo: user.pseudo, anchor: user.gridInfo.anchor }); // Send info from this socket to other players.
+        socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo)); // Send grid and boats to client 
+        socket.to('party').emit('sendInitGridOtherPlayers',
+        { pseudo: user.pseudo, gridInfo: returnGridToOtherPlayer(user.gridInfo)}); // Send info from this socket to other players.
     });
 
     socket.on('disconnect', function () {
@@ -182,7 +183,7 @@ function returnPlayersPseudosInLobby(ids, users) {
 }
 
 /**
- * Thie function purge the propertie gridInfo from user to just send the data 
+ * This function purge the propertie gridInfo from user to just send the data 
  * necessary to render correctly the client. Client don't have to get access
  * to pointers to his boat, he just needs to know where they are.
  * 
@@ -205,8 +206,28 @@ function returnGridClientOwner(gridInfo) {
     return gridToSend;
 }
 
+/**
+ * This function purge the propertie gridInfo from user to pass it to other player's client.
+ * 
+ * Returned the purged grid
+ * @param {*} gridInfo user.gridInfo (in real: users.get(socket.id).gridInfo)
+ */
+function returnGridToOtherPlayer(gridInfo) {
+    let gridToSend = Object.assign({}, gridInfo);
+
+    for (let x = 0; x < gridToSend.grid.length; x++) {
+
+        for (let y = 0; y < gridToSend.grid[x].length; y++) {
+            // We hide info to other client.
+            gridToSend.grid[x][y].boat = false; 
+            gridToSend.grid[x][y].touched = false;
+        }
+    }
+    return gridToSend;
+}
+
+// TODO BUG : Les joueurs qui arrivent ne voient pas les joueurs dénà connectés
 // TODO continuer à connecter le renderer avec le serveur 
-// TODO BUG : Faire envoyer par le serveur la position de chaque cellule des autres joueurs
 // pour pouvoir les afficher, mais évidemment sans envoyer les données sur les navires.
 // TODO : créer un objet "party" qui stockera des infos sur la partie :
 // - les joueurs avec leur socket.id et un boolean pour savoir si ils ont joué sur ce tour
