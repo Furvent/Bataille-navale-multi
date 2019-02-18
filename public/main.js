@@ -89,7 +89,7 @@
         initRendering();
     });
 
-    socket.on('sendInitGridOtherPlayers', function (data) {
+    socket.on('sendInitGridToOtherPlayers', function (data) {
         // At this point, we know that a new player join the game.
         // We must create a grid client side. In it, we will stock the
         // info send by server.
@@ -107,6 +107,7 @@
     }
 
     function initDebug() { // See server side
+        pseudo = "pseudo" + (Math.floor(Math.random() * 100000));
         socket.emit('debugEnterCanvas');
     }
 

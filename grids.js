@@ -7,7 +7,7 @@ module.exports = {
     // In pixels
     CELL_SIDE: 25,
     SPACE_BETWEEN_GRIDS: 50,
-    SPACE_BETWEEN_GRIDS_AND_CANVAS: 25,
+    SPACE_BETWEEN_GRIDS_AND_CANVAS: 50,
 
     // Number of cell FOR ONE GRID in width
     GRID_WIDTH: 10,

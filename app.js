@@ -6,11 +6,13 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let grids = require('./grids');
 let boats = require('./boats');
+let party = require('./party')
+
 const numberMaxPlayers = 4;
 
 app.use(express.static('public'));
 
-const server = 7589;
+const SERVER_PORT = 7589;
 
 /**
  * A map with id as key, and an user as value
@@ -46,7 +48,8 @@ let user = null;
  *        POS: 
  *          { x: int,
  *            y: int }
- *      } ] 
+ *      } ],
+ *   haveFinishedIsTurn: bool // Use to know if player can play
  * }
  */
 
@@ -60,13 +63,13 @@ var indexPlayer = 1;
 // In object lobby, players is a list of id of players in lobby room
 let lobby = { isEmpty: true, isFull: false, players: [] };
 
-http.listen(server, function () {
-    console.log("Server started, listening on *:" + server);
+http.listen(SERVER_PORT, function () {
+    console.log("Server started, listening on *:" + SERVER_PORT);
 });
 
 io.on('connection', function (socket) {
     console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
-    users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
+    /**DEBUG ONLY */users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
     user = users.get(socket.id); // Use as reference to quick selection // TODO : Need verify it's really working...
     console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
 
@@ -110,14 +113,21 @@ io.on('connection', function (socket) {
     });
 
     socket.on('askGrid', function () {
+        // Generate grid
         console.log("*** GENERATING GRID to player: " + user.pseudo + " ***");
-        initClientGrid(); // Generate grid
+        initClientGrid();
+
+        // Generate boats on grid
         console.log("*** GENERATE BOATS to player: " + user.pseudo + " ***");
-        initClientBoats(); // Generate boats on grid
+        initClientBoats();
         console.log("*** END OF GENERATION BOATS to player: " + user.pseudo + " ***");
-        socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo)); // Send grid and boats to client 
-        socket.to('party').emit('sendInitGridOtherPlayers',
-        { pseudo: user.pseudo, gridInfo: returnGridToOtherPlayer(user.gridInfo)}); // Send info from this socket to other players.
+
+        // Send grid and boats to client and others player
+        socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo));
+        socket.to('party').emit('sendInitGridToOtherPlayers',
+        { pseudo: user.pseudo, gridInfo: returnGridToOtherPlayer(user.gridInfo)});
+
+        // If this player is not the first to enter in the party, we need to send other players grid already in party
     });
 
     socket.on('disconnect', function () {
@@ -226,9 +236,7 @@ function returnGridToOtherPlayer(gridInfo) {
     return gridToSend;
 }
 
-// TODO BUG : Les joueurs qui arrivent ne voient pas les joueurs dénà connectés
-// TODO continuer à connecter le renderer avec le serveur 
-// pour pouvoir les afficher, mais évidemment sans envoyer les données sur les navires.
+// TODO BUG : Les joueurs qui arrivent ne voient pas les joueurs déjà connectés
 // TODO : créer un objet "party" qui stockera des infos sur la partie :
 // - les joueurs avec leur socket.id et un boolean pour savoir si ils ont joué sur ce tour
 // - un compteur de tour
