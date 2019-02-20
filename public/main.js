@@ -90,10 +90,11 @@
     });
 
     socket.on('sendInitGridToOtherPlayers', function (data) {
-        // At this point, we know that a new player join the game.
+        // At this point, we know that a new player join the game, or
+        // as a new player we need the grid of precedent players.
         // We must create a grid client side. In it, we will stock the
         // info send by server.
-        otherPlayersGridInfos.push({pseudo: data.pseudo, anchor: data.gridInfo.anchor, grid: data.gridInfo.grid});
+        otherPlayersGridInfos.push({ pseudo: data.pseudo, anchor: data.gridInfo.anchor, grid: data.gridInfo.grid });
 
     });
     //#endregion
@@ -153,6 +154,13 @@
             console.log("Render activate");
             drawEverything(canvas.width, canvas.height, canvasContext, playerGridInfo, pseudo, otherPlayersGridInfos);
         }, 1000 / FRAMES_PER_SECOND);
+    }
+
+    function getCursorPosition(canvas, event) {
+        var rect = canvas.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
+        console.log("x: " + x + " y: " + y);
     }
 
     /**

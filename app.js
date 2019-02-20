@@ -67,13 +67,15 @@ http.listen(SERVER_PORT, function () {
     console.log("Server started, listening on *:" + SERVER_PORT);
 });
 
+//#region io.on
 io.on('connection', function (socket) {
     console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
     /**DEBUG ONLY */users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
     user = users.get(socket.id); // Use as reference to quick selection // TODO : Need verify it's really working...
     console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
 
-    socket.on('debugEnterCanvas', function () { // Use to debug only, call when client is connected first time.
+    // Use to debug only, call when client is connected first time.
+    socket.on('debugEnterCanvas', function () {
         debugInitGame();
     });
 
@@ -125,9 +127,20 @@ io.on('connection', function (socket) {
         // Send grid and boats to client and others player
         socket.emit('sendInitGrid', returnGridClientOwner(user.gridInfo));
         socket.to('party').emit('sendInitGridToOtherPlayers',
-        { pseudo: user.pseudo, gridInfo: returnGridToOtherPlayer(user.gridInfo)});
+            { pseudo: user.pseudo, gridInfo: returnGridToOtherPlayer(user.gridInfo) });
 
-        // If this player is not the first to enter in the party, we need to send other players grid already in party
+        // If this player is not the first to enter in the party,
+        // we need to send other players grid already in party to him
+        for (let i = 0; i < party.players.length; i++) {
+            let otherPlayer = party.players[i];
+            if (otherPlayer != user) { // To avoid send another time to player his own grid
+                socket.emit('sendInitGridToOtherPlayers', {
+                    pseudo: otherPlayer.pseudo, gridInfo: returnGridToOtherPlayer(otherPlayer.gridInfo)
+                });
+            } else {
+                console.log("DEBUG: don't send two times the grid to " + socket.id);
+            }
+        }
     });
 
     socket.on('disconnect', function () {
@@ -147,6 +160,7 @@ io.on('connection', function (socket) {
         socket.join('lobby');
         socket.join('party'); // Use to emit to the good players
         socket.emit('initGame');
+        party.players.push(user) // Add ref to party
     }
 
     function initClientGrid() {
@@ -166,6 +180,7 @@ io.on('connection', function (socket) {
         user.boats = boats.generateBoats(user.gridInfo.grid);
     }
 });
+//#endregion
 
 /**
  * Take the map with users and return pseudos of players
@@ -196,6 +211,7 @@ function returnPlayersPseudosInLobby(ids, users) {
  * This function purge the propertie gridInfo from user to just send the data 
  * necessary to render correctly the client. Client don't have to get access
  * to pointers to his boat, he just needs to know where they are.
+ * Work with the actuel socket or other users.
  * 
  * Return the purged grid
  * @param {*} gridInfo user.gridInfo (in real: users.get(socket.id).gridInfo)
@@ -229,14 +245,14 @@ function returnGridToOtherPlayer(gridInfo) {
 
         for (let y = 0; y < gridToSend.grid[x].length; y++) {
             // We hide info to other client.
-            gridToSend.grid[x][y].boat = false; 
+            gridToSend.grid[x][y].boat = false;
             gridToSend.grid[x][y].touched = false;
         }
     }
     return gridToSend;
 }
 
-// TODO BUG : Les joueurs qui arrivent ne voient pas les joueurs déjà connectés
-// TODO : créer un objet "party" qui stockera des infos sur la partie :
-// - les joueurs avec leur socket.id et un boolean pour savoir si ils ont joué sur ce tour
-// - un compteur de tour
+// TODO test function to get pos of cursor. Added to client
+// TODO : Enlever le debug
+// TODO : instituer le tour par tour
+// TODO : Systeme de victoire
