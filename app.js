@@ -113,6 +113,18 @@ io.on('connection', function (socket) {
             }
         }
     });
+    //#region Game Turn
+    /**Receive mouse pos */
+    socket.on('sendPosMouse', function (mousePos) {
+        // Search which grid is touch
+        let cell = whichCellIsTouched(/**Take pos as argument*/) // Send back an object with {anchorPlayerTouched: {x: int, y: int}, cellIndexOnGrid: {x: int, y:int }}, or null
+        // Search if a boat is touch
+        // Determine if a boat is sinked
+        // Determine if a player loose all his boats
+        // Emission retour doit contenir : la grille qui a été touché en l'identifiant grace à son encre,
+        // Et les coordonnées de la case touchée. Ou l'index ?
+    });
+    //#endregion
 
     socket.on('askGrid', function () {
         // Generate grid

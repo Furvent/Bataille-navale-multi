@@ -146,9 +146,10 @@
         canvasContext = canvas.getContext('2d');
 
         // TODO: ADD EVENT LISTENER ONCLICK ON CANVAS
-        // canvas.addEventListener('mousedown', function (evt) {
-        //     let mousePos = getCursorPosition(evt); // See solo project to copy
-        // });
+        canvas.addEventListener('mousedown', function (evt) {
+            let mousePos = getCursorPosition(canvas, evt);
+            socket.emit('sendPosMouse', mousePos);
+        });
 
         renderLoop = setInterval(function () {
             console.log("Render activate");
@@ -156,11 +157,17 @@
         }, 1000 / FRAMES_PER_SECOND);
     }
 
+    /**
+     * Send back mouse cursor as object {x: int, y: int}
+     * @param {*} canvas 
+     * @param {*} event 
+     */
     function getCursorPosition(canvas, event) {
         var rect = canvas.getBoundingClientRect();
         var x = event.clientX - rect.left;
         var y = event.clientY - rect.top;
         console.log("x: " + x + " y: " + y);
+        return {x: x, y: y};
     }
 
     /**
@@ -184,7 +191,7 @@
                 gridInfo.grid[x].push();
                 gridInfo.grid[x][y] = {
                     touched: false, // Does the cell was touched by any player ? To show it.
-                    boat: false, // If there is a boat, to render it when touched
+                    boat: false // If there is a boat, to render it when touched
                 }
             }
         }
