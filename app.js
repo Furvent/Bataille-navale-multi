@@ -6,7 +6,7 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let grids = require('./grids');
 let boats = require('./boats');
-let party = require('./party')
+let party = require('./party');
 
 const NUMBER_MAX_PLAYERS = 4;
 
@@ -128,7 +128,9 @@ io.on('connection', function (socket) {
     /**Receive mouse pos */
     socket.on('sendPosMouse', function (mousePos) {
         // IMPORTANT : LOOK IF PLAYER CAN PLAY
-        //if (playerCanPlay()) // Send back boolean to tell if player can play
+        if (canPlayerPlay(user)) {
+            party.searchWhichCellIsTouched(mousePos, grids);
+        }
         //let cell = whichCellIsTouched(/**Take pos as argument*/) // Send back an object with {playerId: id, cellIndexOnGrid: {x: int, y:int }}, or null
         //strikeCell(/**Take a pos and an id */)// Search if a boat is touch // Determine if a boat is sinked // Determine if a player loose all his boats
         // Emission retour doit contenir : la grille qui a été touché en l'identifiant grace à son encre,
@@ -277,7 +279,6 @@ function returnGridToOtherPlayer(gridInfo) {
  * Search in the party if all players has entered the game and has loaded his grid.
  */
 function checkIfPartyCanBegin() {
-    let flag = true;
     if (party.players.length === NUMBER_MAX_PLAYERS) { // Check if all players are in the party
         party.players.forEach(player => {
             if (!player.haveLoadedHisGrid) {
@@ -288,7 +289,11 @@ function checkIfPartyCanBegin() {
     }
 }
 
-function canPlayerPlaye(user) {
+/**
+ * Send back a bool to tell if user can play
+ * @param {*} user The client socket
+ */
+function canPlayerPlay(user) {
     if (!user.haveFinishedHisTurn) {
         return true;
     } else {
