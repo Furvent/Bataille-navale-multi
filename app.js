@@ -8,7 +8,10 @@ let grids = require('./grids');
 let boats = require('./boats');
 let party = require('./party')
 
-const numberMaxPlayers = 4;
+const NUMBER_MAX_PLAYERS = 4;
+
+const MESSAGE_PLAYER_CAN_ATTACK = "Fire !";
+const MESSAGE_PLAYER_WAIT = "Waiting others players";
 
 app.use(express.static('public'));
 
@@ -49,7 +52,8 @@ let user = null;
  *          { x: int,
  *            y: int }
  *      } ],
- *   haveFinishedIsTurn: bool // Use to know if player can play
+ *   haveFinishedHisTurn: bool, // Use to know if player can play
+ *   haveLoadedHisGrid: bool // Use to know when begin game
  * }
  */
 
@@ -100,13 +104,13 @@ io.on('connection', function (socket) {
         } else if (lobby.isFull) {
             console.log("User: " + socket.id + " tried to enter in lobby but it was full.");
         } else {
-            console.log("User: " + socket.id + " joins the lobby." + Math.abs((lobby.players.length - numberMaxPlayers)) + " place(s) left.");
+            console.log("User: " + socket.id + " joins the lobby." + Math.abs((lobby.players.length - NUMBER_MAX_PLAYERS)) + " place(s) left.");
             lobby.players.push(socket.id); // Add id of socket in lobby.
             socket.join('lobby');
             socket.emit("enterLobby", returnPlayersPseudosInLobby(lobby.players, users)); // Emit to connected socket
             socket.broadcast.emit("updateLobby", returnPlayersPseudosInLobby(lobby.players, users)); // Update others sockets
 
-            if (lobby.players.length >= numberMaxPlayers) {
+            if (lobby.players.length >= NUMBER_MAX_PLAYERS) {
                 lobby.isFull = true;
                 io.in('lobby').emit('initGame');
                 console.log("Lobby is full, launch a party.");
@@ -114,13 +118,19 @@ io.on('connection', function (socket) {
         }
     });
     //#region Game Turn
+    socket.on('LoadedMyOwnGrid', function () {
+        user.haveLoadedHisGrid = true;
+        if (checkIfPartyCanBegin()) { // Players can begin the party and shoot each other
+            io.in('party').emit('letsPlay', MESSAGE_PLAYER_CAN_ATTACK);
+            newTurn()
+        }
+    });
     /**Receive mouse pos */
     socket.on('sendPosMouse', function (mousePos) {
-        // Search which grid is touch
-        let cell = whichCellIsTouched(/**Take pos as argument*/) // Send back an object with {anchorPlayerTouched: {x: int, y: int}, cellIndexOnGrid: {x: int, y:int }}, or null
-        // Search if a boat is touch
-        // Determine if a boat is sinked
-        // Determine if a player loose all his boats
+        // IMPORTANT : LOOK IF PLAYER CAN PLAY
+        //if (playerCanPlay()) // Send back boolean to tell if player can play
+        //let cell = whichCellIsTouched(/**Take pos as argument*/) // Send back an object with {playerId: id, cellIndexOnGrid: {x: int, y:int }}, or null
+        //strikeCell(/**Take a pos and an id */)// Search if a boat is touch // Determine if a boat is sinked // Determine if a player loose all his boats
         // Emission retour doit contenir : la grille qui a été touché en l'identifiant grace à son encre,
         // Et les coordonnées de la case touchée. Ou l'index ?
     });
@@ -141,7 +151,7 @@ io.on('connection', function (socket) {
         socket.to('party').emit('sendInitGridToOtherPlayers',
             { pseudo: user.pseudo, gridInfo: returnGridToOtherPlayer(user.gridInfo) });
 
-        // If this player is not the first to enter in the party,
+        // If this player is not the first to enter in the party
         // we need to send other players grid already in party to him
         for (let i = 0; i < party.players.length; i++) {
             let otherPlayer = party.players[i];
@@ -149,8 +159,6 @@ io.on('connection', function (socket) {
                 socket.emit('sendInitGridToOtherPlayers', {
                     pseudo: otherPlayer.pseudo, gridInfo: returnGridToOtherPlayer(otherPlayer.gridInfo)
                 });
-            } else {
-                console.log("DEBUG: don't send two times the grid to " + socket.id);
             }
         }
     });
@@ -173,10 +181,11 @@ io.on('connection', function (socket) {
         socket.join('party'); // Use to emit to the good players
         socket.emit('initGame');
         party.players.push(user) // Add ref to party
+        user.haveFinishedHisTurn = true;
     }
 
     function initClientGrid() {
-        if (indexPlayer <= numberMaxPlayers) {
+        if (indexPlayer <= NUMBER_MAX_PLAYERS) {
             // Generate grid
             user.gridInfo = grids.generateGrid(indexPlayer);
             console.log("USER " + socket.id + " with pseudo " + user.pseudo + " have indexPlayer of " + indexPlayer);
@@ -192,7 +201,7 @@ io.on('connection', function (socket) {
         user.boats = boats.generateBoats(user.gridInfo.grid);
     }
 });
-//#endregion
+//#endregion io.com
 
 /**
  * Take the map with users and return pseudos of players
@@ -256,12 +265,35 @@ function returnGridToOtherPlayer(gridInfo) {
     for (let x = 0; x < gridToSend.grid.length; x++) {
 
         for (let y = 0; y < gridToSend.grid[x].length; y++) {
-            // We hide info to other client.
+            // We hide info to others clients/players.
             gridToSend.grid[x][y].boat = false;
             gridToSend.grid[x][y].touched = false;
         }
     }
     return gridToSend;
+}
+
+/**
+ * Search in the party if all players has entered the game and has loaded his grid.
+ */
+function checkIfPartyCanBegin() {
+    let flag = true;
+    if (party.players.length === NUMBER_MAX_PLAYERS) { // Check if all players are in the party
+        party.players.forEach(player => {
+            if (!player.haveLoadedHisGrid) {
+                return false;
+            }
+        });
+        return true;
+    }
+}
+
+function canPlayerPlaye(user) {
+    if (!user.haveFinishedHisTurn) {
+        return true;
+    } else {
+        console.log("USER " + socket.id + " with pseudo " + user.pseudo + " tried to shoot out of his turn");
+    }
 }
 
 // TODO test function to get pos of cursor. Added to client

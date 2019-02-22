@@ -24,7 +24,7 @@
     /**
      * Use to determinate rendering refresh
      */
-    const FRAMES_PER_SECOND = 10;
+    const FRAMES_PER_SECOND = 1;
 
     /**
      * Use to ref the text at the bottom of the canvas
@@ -86,6 +86,7 @@
 
     socket.on('sendInitGrid', function (data) {
         playerGridInfo = data;
+        socket.emit('LoadedMyOwnGrid');
         initRendering();
     });
 
@@ -98,7 +99,11 @@
 
     });
     //#endregion
-
+    //#region Game logic
+    socket.on('letsPlay', function (message) {
+        giveInfoPlayers(message);
+    })
+    //#endregion
     function init() {
         pseudo = askPseudo(); // Get pseudo
         socket.emit('getPseudo', pseudo); // Send it to server
@@ -167,7 +172,7 @@
         var x = event.clientX - rect.left;
         var y = event.clientY - rect.top;
         console.log("x: " + x + " y: " + y);
-        return {x: x, y: y};
+        return { x: x, y: y };
     }
 
     /**

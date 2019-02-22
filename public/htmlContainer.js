@@ -28,6 +28,12 @@ function showLobby(container, title, pseudos) {
     }
 }
 
+/**
+ * Show the party room.
+ * Add the canvas where render the game.
+ * @param {HtmlElement} container 
+ * @param {HtmlElement} title 
+ */
 function showCanvasRoom(container, title) {
     document.body.removeChild(title);
 
@@ -44,6 +50,11 @@ function showCanvasRoom(container, title) {
     // Generate text at the bottom of canvas
     let para = document.createElement('p');
     para.setAttribute('id', 'output-text');
-    para.innerText = "Waiting players";
     container.appendChild(para);
+    giveInfoPlayers("Waiting others players to begin the party.");
+}
+
+function giveInfoPlayers(message) {
+    let para = document.getElementById('output-text');
+    para.innerText = message;
 }
