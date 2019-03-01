@@ -75,7 +75,7 @@ http.listen(SERVER_PORT, function () {
 io.on('connection', function (socket) {
     console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
     /**DEBUG ONLY */users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
-    user = users.get(socket.id); // Use as reference to quick selection // TODO : Need verify it's really working...
+    user = users.get(socket.id); // Use as reference to quick selection
     console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
 
     // Use to debug only, call when client is connected first time.
@@ -129,7 +129,8 @@ io.on('connection', function (socket) {
     socket.on('sendPosMouse', function (mousePos) {
         // IMPORTANT : LOOK IF PLAYER CAN PLAY
         if (canPlayerPlay(user)) {
-            party.searchWhichCellIsTouched(mousePos, grids);
+            console.log("PLAYER: " + user.id + " with ID: " + socket.id + " shoot.")
+            party.playerShoot(mousePos, grids, user);
         }
         //let cell = whichCellIsTouched(/**Take pos as argument*/) // Send back an object with {playerId: id, cellIndexOnGrid: {x: int, y:int }}, or null
         //strikeCell(/**Take a pos and an id */)// Search if a boat is touch // Determine if a boat is sinked // Determine if a player loose all his boats
@@ -301,6 +302,7 @@ function canPlayerPlay(user) {
     }
 }
 
+// TODO : Tester un projet vierge pour avoir l'utilisation des modules. Voir la doc de node là dessus avant.
 // TODO test function to get pos of cursor. Added to client
 // TODO : Enlever le debug
 // TODO : instituer le tour par tour

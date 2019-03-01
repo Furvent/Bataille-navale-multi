@@ -3,7 +3,7 @@
 module.exports = {
     /**
      * Return if there is a collision between a rectangle and a point
-     * @param {*} rect The rectangle (the grid) to the form : {begin: {x:int, y:int}, end: {x:int, y:int}}
+     * @param {*} rect The rectangle (the grid or cell) to the form : {begin: {x:int, y:int}, end: {x:int, y:int}}
      * @param {*} point {x:int, y:int}
      * 
      * @return a boolean
