@@ -301,9 +301,8 @@ function canPlayerPlay(user) {
         console.log("USER " + socket.id + " with pseudo " + user.pseudo + " tried to shoot out of his turn");
     }
 }
-
+// TODO : Maintenant que l'on peut toucher une case, il faut gérer les différentes situations (boat présent, case déjà touchée, etc)
 // TODO : Tester un projet vierge pour avoir l'utilisation des modules. Voir la doc de node là dessus avant.
-// TODO test function to get pos of cursor. Added to client
 // TODO : Enlever le debug
 // TODO : instituer le tour par tour
 // TODO : Systeme de victoire
