@@ -20,36 +20,42 @@ module.exports = {
         this.allPlayersHavePlayedThisTurn = false;
     },
     /**
-     * Send back infos about where the player shoot
+     * Handle the shoot.
      * @param {*} pos The pos in pixel where player shooted
      * @param {*} grids a ref to the module grids.js to use its constante value
      * @param {*} shooter a ref to the user shooting
+     * @return Send back a boolean indicating if player have use is turn
      */
-    playerShoot: function (pos, grids, shooter) {
+    shoot: function (pos, grids, shooter) {
         // Search which player is touched
         let playerTouched = whichGridTouched(pos, this.players, grids);
         if (grid) /** If grid not null */ {
-
             if (shooter === playerTouched) /** If shooter is dumb and shoot is boat */ {
                 console.log("PLAYER tried to shoot his own grid... *sigh*");
             } else {
                 console.log("PLAYER shoot the grid of PLAYER: " + playerTouched.pseudo);
                 let cellTouched = wichCellIsTouched(playerTouched.gridInfo.grid, pos, grids);
-
                 if (cellTouched) /** If cell not null */ {
                     console.log("PLAYER touched the cell with index x: " + cellTouched.x + "-" + "y: " + cellTouched.y + ".");
-                    return cellTouched;
+                    return updateCell(playerTouched, cellTouched);
                 } else {
-                    console.log("DEBUG : It's weird, the player touched a grid, but no cell was found. See function Party.playerShoot()");
+                    console.log("DEBUG : It's weird, the player touched a grid, but no cell was found. See function Party.shoot()");
                 }
-
             }
-
         } else {
             console.log("PLAYER try to shoot at pos " + pos.x + "-" + pos.y + " en touched nothing.");
         }
         // If we reach that part of the func, send back null
         return null;
+    },
+
+    checkIfAllPlayersPlayedThisTurn: function () {
+        this.players.forEach(player => {
+            if (!player.haveFinishedHisTurn) {
+                return false;
+            }
+        });
+        return true;
     }
 }
 
@@ -135,4 +141,26 @@ function wichCellIsTouched(grid, pos, grids) {
     } // End i loop
     // If we reach that part of the code, send back null
     return null;
+}
+/**
+ * See what infos are at cell pos. And update its.
+ * @param {*} playerTouched Ref to player touched
+ * @param {*} pos 
+ */
+function updateCell(playerTouched, pos) {
+    // We check if this cell was already touched
+    let cell = playerTouched.gridInfo.grid[pos.x][pos.y];
+    if (!cell.touched) /** If cell never touched before */ {
+        cell.touched = true;
+        if (cell.boat !== null) /** If there is a boat */ {
+            cell.boat.life--;
+            if (cell.boat.life < 0) {
+                console.log("DEBUG: Boat of player " + playerTouched.pseudo + " have a negative life");
+            }
+        }
+        return {playerTouched: playerTouched.gridInfo.anchor, cellIndex: pos};
+    } else {
+        console.log("PLAYER touched a cell already touched")
+        return null;
+    }
 }

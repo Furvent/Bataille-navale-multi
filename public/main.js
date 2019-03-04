@@ -102,7 +102,15 @@
     //#region Game logic
     socket.on('letsPlay', function (message) {
         giveInfoPlayers(message);
-    })
+    });
+
+    socket.on('cellTouched', function (data) {
+        updateCell(data);
+    });
+
+    socket.on('newTurn', function () {
+        updateTurn();
+    });
     //#endregion
     function init() {
         pseudo = askPseudo(); // Get pseudo
@@ -202,4 +210,32 @@
         }
         return gridInfo;
     }
+
+    /**
+     * Update data about cell touched. First look if client is touched, if not search wich player
+     * was touched and update info.
+     * @param {*} data 
+     */
+    function updateCell(data) {
+        // First we want to know if it's data about our client grid
+        if (data.playerTouched.x === playerGridInfo.anchor.x && data.playerTouched.y === playerGridInfo.anchor.y) {
+            console.log("Client grid is touched !");
+            let cell = playerGridInfo.grid[data.cellIndex.x][data.cellIndex.y];
+            if (!cell.touched) {
+                console.log("DEBUG: cell wasnt touched and is touch now ! Cell is at index: " + data.cellIndex.x + "-" + data.cellIndex.y);
+                cell.touched = true;
+            } else {
+                console.log("DEBUG: <<<<BUG>>>>, a cell already touched was shoot again. Not normal because server mustn't validate a shot on a touched cell.")
+            }
+        }
+        else {
+            otherPlayersGridInfos.forEach(player => {
+                
+            });
+        }
+    }
+
 })();
+
+// TODO : Voir updateCells, rajouter une fonction pour connaitre un joueur selon son ancre.
+// TODO : Afficher un message quand on peut jouer.

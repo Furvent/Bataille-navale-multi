@@ -129,12 +129,27 @@ io.on('connection', function (socket) {
     socket.on('sendPosMouse', function (mousePos) {
         // IMPORTANT : LOOK IF PLAYER CAN PLAY
         if (canPlayerPlay(user)) {
-            console.log("PLAYER: " + user.id + " with ID: " + socket.id + " shoot.")
-            party.playerShoot(mousePos, grids, user);
+            console.log("PLAYER: " + user.pseudo + " with ID: " + socket.id + " shoot.");
+            /**
+             * In data there is the anchor of the grid of the player touched, and the pos of the cell.
+             */
+            let data = party.shoot(mousePos, grids, user);
+            if (data !== null) {
+                console.log("PLAYER: " + user.pseudo + " with ID: " + socket.id + " shot a cell and have used is turn.");
+                user.haveFinishedHisTurn = true;
+                io.in('party').emit('cellTouched');
+                if (party.checkIfAllPlayersPlayedThisTurn()) /** If all players played */ {
+                    // We launch a new turn
+                    party.playerNextTurn();
+                    io.in('party').emit('newTurn');
+                }
+            } else /** If some players haven't played yet */ {
+                console.log("PLAYER: " + user.pseudo + " with ID: " + socket.id + " didn't use is turn, shot failed.");
+            }
         }
         //let cell = whichCellIsTouched(/**Take pos as argument*/) // Send back an object with {playerId: id, cellIndexOnGrid: {x: int, y:int }}, or null
         //strikeCell(/**Take a pos and an id */)// Search if a boat is touch // Determine if a boat is sinked // Determine if a player loose all his boats
-        // Emission retour doit contenir : la grille qui a été touché en l'identifiant grace à son encre,
+        // Emission retour doit contenir : la grille qui a été touché en l'identifiant grace à son ancre,
         // Et les coordonnées de la case touchée. Ou l'index ?
     });
     //#endregion
@@ -301,6 +316,8 @@ function canPlayerPlay(user) {
         console.log("USER " + socket.id + " with pseudo " + user.pseudo + " tried to shoot out of his turn");
     }
 }
+
+// TODO : Aprem voir côté client dans main.js !!!
 // TODO : Maintenant que l'on peut toucher une case, il faut gérer les différentes situations (boat présent, case déjà touchée, etc)
 // TODO : Tester un projet vierge pour avoir l'utilisation des modules. Voir la doc de node là dessus avant.
 // TODO : Enlever le debug
