@@ -135,7 +135,7 @@ io.on('connection', function (socket) {
             /**
              * In data there is the anchor of the grid of the player touched, and the pos of the cell.
              */
-            let data = party.shoot(mousePos, grids, user);
+            let data = party.shoot(mousePos, grids, user, /**users just to debug */users);
             if (data !== null) {
                 console.log("PLAYER: " + user.pseudo + " with ID: " + socket.id + " shot a cell and have used is turn.");
                 user.haveFinishedHisTurn = true;
@@ -197,8 +197,9 @@ io.on('connection', function (socket) {
 
     function debugInitGame() {
         /**DEBUG ONLY */users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
+        /**DEBUG ONLY */user = users.get(socket.id); // Use as reference to quick selection
         /**DEBUG ONLY */console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
-        lobby.players.push(socket.id);
+        /**DEBUG ONLY */lobby.players.push(socket.id);
         socket.join('lobby');
         socket.join('party'); // Use to emit to the good players
         socket.emit('initGame');
@@ -221,8 +222,12 @@ io.on('connection', function (socket) {
 
     function initClientBoats() {
         user.boats = boats.generateBoats(user.gridInfo.grid);
-        console.log(util.inspect(user, false, null, true /* enable colors */));
-        console.log(util.inspect(party.players[0], false, null, true /* enable colors */));
+        // console.log("<<<<INSPECT: user");
+        // console.log(util.inspect(user, false, null, true /* enable colors */));
+        // console.log("END_INSPECT: user >>>>");
+        // console.log("<<<<INSPECT: party.players[0]");
+        // console.log(util.inspect(party.players[0], false, null, true /* enable colors */));
+        // console.log("END_INSPECT: party.players[0] >>>>");
 
     }
 });
@@ -263,18 +268,33 @@ function returnPlayersPseudosInLobby(ids, users) {
  * @param {*} gridInfo user.gridInfo (in real: users.get(socket.id).gridInfo)
  */
 function returnGridClientOwner(gridInfo) {
-    let gridToSend = Object.assign({}, gridInfo);
+
+    console.log("<<<<INSPECT: gridInfo in app.returnGridClientOwner() BEFORE using Object.assign");
+    console.log(util.inspect(gridInfo, false, null, true /* enable colors */));
+    console.log("END_INSPECT: gridInfo in app.returnGridClientOwner() BEFORE using Object.assign >>>>");
+
+    let gridToSend = {};
 
     for (let x = 0; x < gridToSend.grid.length; x++) {
 
         for (let y = 0; y < gridToSend.grid[x].length; y++) {
             if (gridToSend.grid[x][y].boat !== null) { // If there is a pointer to a boat, change it to a boolean with value true
-                gridToSend.grid[x][y].boat = true;
+                delete gridToSend.grid[x][y].boat; // Remove propertie to don't modify the pointer when giving true or false value to .boat
+
+                //gridToSend.grid[x][y].boat = true;
             } else { // Or if there is no boat, change the null value to a boolean with false
-                gridToSend.grid[x][y].boat = false;
+                delete gridToSend.grid[x][y].boat; // Remove propertie to don't modify the pointer when giving true or false value to .boat
+                //gridToSend.grid[x][y].boat = false;
             }
+            console.log("------------- propertie .boat of gridInfo: " + gridInfo.grid[x][y].boat);
+            console.log("************* propertie .boat of gridToSend: " + gridToSend.grid[x][y].boat);
         }
     }
+
+    console.log("<<<<INSPECT: gridInfo in app.returnGridClientOwner() AFTER using Object.assign");
+    console.log(util.inspect(gridInfo, false, null, true /* enable colors */));
+    console.log("END_INSPECT: gridInfo in app.returnGridClientOwner() AFTER using Object.assign >>>>");
+
     return gridToSend;
 }
 
@@ -323,7 +343,8 @@ function canPlayerPlay(user) {
         console.log("USER " + socket.id + " with pseudo " + user.pseudo + " tried to shoot out of his turn");
     }
 }
-
+// TODO : REWORK la grid envoyée au client, catastrophe dans la copie d'objet (soucis de référence et de pointeur);
+// TODO : URGENT -- Bug avec la référence vers les bateaux quand on le fait à partir de party.players
 // TODO : Aprem voir côté client dans main.js !!!
 // TODO : Players mustn't shoot before party begin
 // TODO : Créer un système de messages sur le canvas (voir si les autres joueurs ont joué)

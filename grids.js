@@ -10,9 +10,9 @@ module.exports = {
     SPACE_BETWEEN_GRIDS_AND_CANVAS: 50,
 
     // Number of cell FOR ONE GRID in width
-    GRID_WIDTH: 10,
+    GRID_WIDTH: 4,
     // Number of cell FOR ONE GRID in height
-    GRID_HEIGHT: 10,
+    GRID_HEIGHT: 4,
 
     /**
      * Generate grid informations.

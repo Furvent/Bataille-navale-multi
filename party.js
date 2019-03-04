@@ -27,8 +27,13 @@ module.exports = {
      * @param {*} shooter a ref to the user shooting
      * @return Send back a boolean indicating if player have use is turn
      */
-    shoot: function (pos, grids, shooter) {
-        console.log(util.inspect(this.players, false, null, true /* enable colors */));
+    shoot: function (pos, grids, shooter, users) {
+        // console.log("<<<<INSPECT: players in party.players");
+        // console.log(util.inspect(this.players, false, null, true /* enable colors */));
+        // console.log("END_INSPECT: players in party.players >>>>");
+        // console.log("<<<<INSPECT: users in party.players");
+        // console.log(util.inspect(users, false, null, true /* enable colors */));
+        // console.log("END_INSPECT: users in party.players >>>>");
         // Search which player is touched
         let playerTouched = whichGridTouched(pos, this.players, grids);
         if (playerTouched) /** If playerTouched not null */ {

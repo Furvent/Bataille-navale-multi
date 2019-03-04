@@ -3,7 +3,7 @@
  * Handle all functions relative to boats generation and populate them in grids.
  */
 module.exports = {
-    BOATS: [8, 5, 4, 3, 3, 2, 2], // Boats that must be put in the grid. Each number correspond to a boat size.
+    BOATS: [3, 2], // Boats that must be put in the grid. Each number correspond to a boat size.
     /**
      * Create a new boat with a size and an array of positions.
      * @param {Integer} size : The size of the boat 
