@@ -230,12 +230,30 @@
         }
         else {
             otherPlayersGridInfos.forEach(player => {
-                
+                if (isSameAnchor(player.anchor, data.playerTouched)) {
+                    console.log("Other Player grid is touched !");
+                    let cell = otherPlayersGridInfos[data.cellIndex.x][data.cellIndex.y];
+                    if (!cell.touched) {
+                        console.log("DEBUG: cell wasnt touched and is touch now ! Cell is at index: " + data.cellIndex.x + "-" + data.cellIndex.y);
+                        cell.touched = true;
+                    } else {
+                        console.log("DEBUG: <<<<BUG>>>>, a cell already touched was shoot again. Not normal because server mustn't validate a shot on a touched cell.")
+                    }
+                }
             });
         }
     }
 
-})();
+    function isSameAnchor(anchor1, anchor2) {
+        if (anchor1.x === anchor2.x && anchor1.y === anchor2.y) {
+            return true
+        } else {
+            return false;
+        }
+    }
 
-// TODO : Voir updateCells, rajouter une fonction pour connaitre un joueur selon son ancre.
-// TODO : Afficher un message quand on peut jouer.
+    function updateTurn() {
+
+    }
+
+})();

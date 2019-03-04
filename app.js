@@ -7,8 +7,9 @@ let io = require('socket.io')(http);
 let grids = require('./grids');
 let boats = require('./boats');
 let party = require('./party');
+const util = require('util');
 
-const NUMBER_MAX_PLAYERS = 4;
+const NUMBER_MAX_PLAYERS = 2;
 
 const MESSAGE_PLAYER_CAN_ATTACK = "Fire !";
 const MESSAGE_PLAYER_WAIT = "Waiting others players";
@@ -74,9 +75,7 @@ http.listen(SERVER_PORT, function () {
 //#region io.on
 io.on('connection', function (socket) {
     console.log("USER: " + socket.id + " CONNECTED TO SERVER.");
-    /**DEBUG ONLY */users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
     user = users.get(socket.id); // Use as reference to quick selection
-    console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
 
     // Use to debug only, call when client is connected first time.
     socket.on('debugEnterCanvas', function () {
@@ -120,9 +119,12 @@ io.on('connection', function (socket) {
     //#region Game Turn
     socket.on('LoadedMyOwnGrid', function () {
         user.haveLoadedHisGrid = true;
+        // Note pour plus tard : la fonction checkIfPartyCanBegin() devrait appartenir au module partie.
         if (checkIfPartyCanBegin()) { // Players can begin the party and shoot each other
+            console.log("PARTY LAUNCHED");
+            console.log()
             io.in('party').emit('letsPlay', MESSAGE_PLAYER_CAN_ATTACK);
-            newTurn()
+            party.playerNextTurn();
         }
     });
     /**Receive mouse pos */
@@ -194,6 +196,8 @@ io.on('connection', function (socket) {
     });
 
     function debugInitGame() {
+        /**DEBUG ONLY */users.set(socket.id, { pseudo: "pseudo" + (Math.floor(Math.random() * 100000)) }); // Debug only
+        /**DEBUG ONLY */console.log("User: " + socket.id + " have pseudo: " + user.pseudo);
         lobby.players.push(socket.id);
         socket.join('lobby');
         socket.join('party'); // Use to emit to the good players
@@ -217,6 +221,9 @@ io.on('connection', function (socket) {
 
     function initClientBoats() {
         user.boats = boats.generateBoats(user.gridInfo.grid);
+        console.log(util.inspect(user, false, null, true /* enable colors */));
+        console.log(util.inspect(party.players[0], false, null, true /* enable colors */));
+
     }
 });
 //#endregion io.com
@@ -318,8 +325,8 @@ function canPlayerPlay(user) {
 }
 
 // TODO : Aprem voir côté client dans main.js !!!
-// TODO : Maintenant que l'on peut toucher une case, il faut gérer les différentes situations (boat présent, case déjà touchée, etc)
-// TODO : Tester un projet vierge pour avoir l'utilisation des modules. Voir la doc de node là dessus avant.
-// TODO : Enlever le debug
-// TODO : instituer le tour par tour
+// TODO : Players mustn't shoot before party begin
+// TODO : Créer un système de messages sur le canvas (voir si les autres joueurs ont joué)
 // TODO : Systeme de victoire
+// TODO : S'occuper de gérer les bateaux quand ils sont touchés et potentiellement détruits
+// TODO : Enlever le debug

@@ -22,6 +22,7 @@ module.exports = {
     generateBoats: function (grid) {
         let boats = [];
         for (let i = 0; i < this.BOATS.length; i++) {
+            // Add boat to the list
             boats.push(placeBoat(this.BOATS[i], grid));
         }
         return boats;

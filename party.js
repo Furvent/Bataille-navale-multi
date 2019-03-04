@@ -1,6 +1,7 @@
 "use strict";
 
 let col = require('./collision'); // Use to handle collisions
+const util = require('util');
 
 module.exports = {
     /**
@@ -8,8 +9,8 @@ module.exports = {
      */
     players: [],
     numberTurns: 0,
-    allPlayerHaveLoadedHisGrid: false,
-    allPlayersHavePlayedThisTurn: false,
+    //allPlayerHaveLoadedHisGrid: false,
+    allPlayersHavePlayedThisTurn: false, // Never used......
 
     /**
      * Initiate a new turn
@@ -27,9 +28,10 @@ module.exports = {
      * @return Send back a boolean indicating if player have use is turn
      */
     shoot: function (pos, grids, shooter) {
+        console.log(util.inspect(this.players, false, null, true /* enable colors */));
         // Search which player is touched
         let playerTouched = whichGridTouched(pos, this.players, grids);
-        if (grid) /** If grid not null */ {
+        if (playerTouched) /** If playerTouched not null */ {
             if (shooter === playerTouched) /** If shooter is dumb and shoot is boat */ {
                 console.log("PLAYER tried to shoot his own grid... *sigh*");
             } else {
@@ -97,7 +99,7 @@ function whichGridTouched(pos, players, grids) {
  * @param {*} gridH Grid height in pixels
  */
 function isThisGrid(pos, player, gridW, gridH) {
-    let rect = {};
+    let rect = { begin: {}, end: {} };
     let x = player.gridInfo.anchor.x;
     let y = player.gridInfo.anchor.y;
     /**
@@ -150,6 +152,7 @@ function wichCellIsTouched(grid, pos, grids) {
 function updateCell(playerTouched, pos) {
     // We check if this cell was already touched
     let cell = playerTouched.gridInfo.grid[pos.x][pos.y];
+    console.log(util.inspect(cell, false, null, true /* enable colors */));
     if (!cell.touched) /** If cell never touched before */ {
         cell.touched = true;
         if (cell.boat !== null) /** If there is a boat */ {
@@ -158,7 +161,7 @@ function updateCell(playerTouched, pos) {
                 console.log("DEBUG: Boat of player " + playerTouched.pseudo + " have a negative life");
             }
         }
-        return {playerTouched: playerTouched.gridInfo.anchor, cellIndex: pos};
+        return { playerTouched: playerTouched.gridInfo.anchor, cellIndex: pos };
     } else {
         console.log("PLAYER touched a cell already touched")
         return null;

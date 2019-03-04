@@ -9,7 +9,6 @@ module.exports = {
      * @return a boolean
      */
     rectWithPoint: function (rect, point) {
-        console.log("DEBUG: Is " + rect.begin + "-" + rect.end + " touch by " + point);
         return pointIsSup(rect.begin, point) && pointIsInf(rect.end, point);
     }
 }
